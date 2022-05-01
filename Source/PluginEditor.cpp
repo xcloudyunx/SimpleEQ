@@ -281,27 +281,57 @@ void ResponseCurveComponent::resized() {
     
     background = Image(Image::PixelFormat::RGB, getWidth(), getHeight(), true);
     Graphics g(background);
+    g.setColour(Colours::dimgrey);
 
     Array<float> freqs{
-        20, 30, 40, 50, 100,
-        200, 300, 400, 500, 1000,
-        2000, 3000, 4000, 5000, 10000,
+        20, /*30, 40,*/ 50, 100,
+        200, /*300, 400,*/ 500, 1000,
+        2000, /*3000, 4000,*/ 5000, 10000,
         20000
     };
-
-    g.setColour(Colours::dimgrey);
+    Array<float> freqsX;
     for (auto f : freqs) {
         auto normX = mapFromLog10(f, 20.0f, 20000.0f);
-        g.drawVerticalLine(left + width * normX, renderTop, renderBottom);
+        freqsX.add(left + width * normX);
+        g.drawVerticalLine(freqsX.getLast(), renderTop, renderBottom);
     }
 
     Array<float> gains{
         -24, -12, 0, 12, 24
     };
+    Array<float> gainsY;
     for (auto gDb : gains) {
         auto y = jmap(gDb, -24.0f, 24.0f, float(bottom), float(top));
         g.setColour(gDb == 0.0f ? Colour(0u, 172u, 1u) : Colours::darkgrey);
+        gainsY.add(y);
         g.drawHorizontalLine(y, left, right);
+    }
+
+    g.setColour(Colours::lightgrey);
+    const int fontHeight = 10;
+    g.setFont(fontHeight);
+    for (int i = 0; i < freqs.size(); i++) {
+        auto f = freqs[i];
+        auto x = freqsX[i];
+
+        bool addK = false;
+        String str;
+        if (f >= 1000.0f) {
+            addK = true;
+            f /= 1000.0f;
+        }
+        str << f << " ";
+        if (addK) str << "k";
+        str << "Hz";
+
+        auto textWidth = g.getCurrentFont().getStringWidth(str);
+
+        Rectangle<int> r;
+        r.setSize(textWidth, fontHeight);
+        r.setCentre(x, 0);
+        r.setY(1);
+
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
     }
 }
 
