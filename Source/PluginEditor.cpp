@@ -66,31 +66,51 @@ void LookAndFeel::drawToggleButton(juce::Graphics& g,
 {
     using namespace juce;
 
-    Path powerButton;
+    if (auto* pb = dynamic_cast<PowerButton*>(&toggleButton)) {
+        Path powerButton;
 
-    auto bounds = toggleButton.getLocalBounds();
-    auto size = jmin(bounds.getWidth(), bounds.getHeight()) - 6;
-    auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
+        auto bounds = toggleButton.getLocalBounds();
+        auto size = jmin(bounds.getWidth(), bounds.getHeight()) - 6;
+        auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
 
-    size -= 6;
+        size -= 6;
 
-    float ang = 30.0f;
-    powerButton.addCentredArc(r.getCentreX(),
-        r.getCentreY(),
-        size / 2,
-        size / 2,
-        0.0f,
-        degreesToRadians(ang),
-        degreesToRadians(360 - ang),
-        true);
-    powerButton.startNewSubPath(r.getCentreX(), r.getY());
-    powerButton.lineTo(r.getCentre());
+        float ang = 30.0f;
+        powerButton.addCentredArc(r.getCentreX(),
+            r.getCentreY(),
+            size / 2,
+            size / 2,
+            0.0f,
+            degreesToRadians(ang),
+            degreesToRadians(360 - ang),
+            true);
+        powerButton.startNewSubPath(r.getCentreX(), r.getY());
+        powerButton.lineTo(r.getCentre());
 
-    PathStrokeType pst(2.0f, PathStrokeType::JointStyle::curved);
-    auto colour = toggleButton.getToggleState() ? Colours::dimgrey : Colour(0u, 172u, 1u);
-    g.setColour(colour);
-    g.strokePath(powerButton, pst);
-    g.drawEllipse(r, 2);
+        PathStrokeType pst(2.0f, PathStrokeType::JointStyle::curved);
+        auto colour = toggleButton.getToggleState() ? Colours::dimgrey : Colour(0u, 172u, 1u);
+        g.setColour(colour);
+        g.strokePath(powerButton, pst);
+        g.drawEllipse(r, 2);
+    }
+    else if (auto* ab = dynamic_cast<AnalyserButton*>(&toggleButton)) {
+        auto colour = toggleButton.getToggleState() ? Colour(0u, 172u, 1u) : Colours::dimgrey;
+        g.setColour(colour);
+
+        auto bounds = toggleButton.getLocalBounds();
+        g.drawRect(bounds);
+        auto insetRect = bounds.reduced(4);
+
+        Path randomPath;
+        Random r;
+        randomPath.startNewSubPath(insetRect.getX(),
+            insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        for (auto x = insetRect.getX() + 1; x < insetRect.getRight(); x += 2) {
+            randomPath.lineTo(x,
+                insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        }
+        g.strokePath(randomPath, PathStrokeType(1.0f));
+    }
 }
 
 //==============================================================================
@@ -532,6 +552,7 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
     lowCutBypassButton.setLookAndFeel(&lnf);
     peakBypassButton.setLookAndFeel(&lnf);
     highCutBypassButton.setLookAndFeel(&lnf);
+    analyserEnabledButton.setLookAndFeel(&lnf);
 
     setSize (600, 480);
 }
@@ -540,6 +561,7 @@ SimpleEQAudioProcessorEditor::~SimpleEQAudioProcessorEditor() {
     lowCutBypassButton.setLookAndFeel(nullptr);
     peakBypassButton.setLookAndFeel(nullptr);
     highCutBypassButton.setLookAndFeel(nullptr);
+    analyserEnabledButton.setLookAndFeel(nullptr);
 }
 
 //==============================================================================
@@ -556,8 +578,16 @@ void SimpleEQAudioProcessorEditor::resized()
     // subcomponents in your editor..
 
     auto bounds = getLocalBounds();
-    auto hRatio = 25.0f / 100.0f; //JUCE_LIVE_CONSTANT(33)/100.0f;
-    auto responseArea = bounds.removeFromTop(bounds.getHeight() * hRatio);
+
+    auto analyserEnabledArea = bounds.removeFromTop(25);
+    analyserEnabledArea.setWidth(100);
+    analyserEnabledArea.setX(5);
+    analyserEnabledArea.removeFromTop(2);
+    analyserEnabledButton.setBounds(analyserEnabledArea);
+
+    bounds.removeFromTop(5);
+
+    auto responseArea = bounds.removeFromTop(bounds.getHeight() / 4);
 
     responseCurveComponent.setBounds(responseArea);
 
