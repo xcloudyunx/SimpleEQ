@@ -333,6 +333,25 @@ void ResponseCurveComponent::resized() {
 
         g.drawFittedText(str, r, juce::Justification::centred, 1);
     }
+
+    for (int i = 0; i < gains.size(); i++) {
+        auto gDb = gains[i];
+        auto y = gainsY[i];
+
+        String str;
+        if (gDb > 0) str << "+";
+        str << gDb;
+
+        auto textWidth = g.getCurrentFont().getStringWidth(str);
+
+        Rectangle<int> r;
+        r.setSize(textWidth, fontHeight);
+        r.setCentre(0, y);
+        r.setX(getWidth() - textWidth);
+
+        g.setColour(gDb == 0.0f ? Colour(0u, 172u, 1u) : Colours::lightgrey);
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
+    }
 }
 
 juce::Rectangle<int> ResponseCurveComponent::getRenderArea() {
