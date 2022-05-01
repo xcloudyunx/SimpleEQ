@@ -54,7 +54,6 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
 
         g.setColour(Colours::black);
         g.fillRect(r);
-
         g.setColour(Colours::white);
         g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1);
     }
@@ -85,6 +84,32 @@ void RotarySliderWithLabels::paint(juce::Graphics& g) {
         startAng,
         endAng,
         *this);
+
+    auto centre = sliderBounds.toFloat().getCentre();
+    auto radius = sliderBounds.getWidth() / 2.0f;
+    
+    g.setColour(Colour(0u, 172u, 1u));
+    g.setFont(getTextHeight());
+
+    auto numChoices = labels.size();
+    for (int i = 0; i < numChoices; i++) {
+        auto pos = labels[i].pos;
+        jassert(0.0f <= pos);
+        jassert(pos <= 1.0f);
+
+        auto ang = jmap(pos, 0.0f, 1.0f, startAng, endAng);
+
+        auto c = centre.getPointOnCircumference(radius + getTextHeight() / 2.0f + 1, ang);
+
+        Rectangle<float> r;
+        auto str = labels[i].label;
+        r.setSize(g.getCurrentFont().getStringWidth(str), getTextHeight());
+        r.setCentre(c);
+        r.setY(r.getY() + getTextHeight());
+        
+        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+    }
+    
 }
 
 juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds() const {
@@ -255,6 +280,27 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
+
+    peakFreqSlider.labels.add({ 0.0f, "20 Hz" });
+    peakFreqSlider.labels.add({ 1.0f, "20 kHz" });
+
+    peakGainSlider.labels.add({ 0.0f, "-24 dB" });
+    peakGainSlider.labels.add({ 1.0f, "+24 dB" });
+
+    peakQualitySlider.labels.add({ 0.0f, "0.1" });
+    peakQualitySlider.labels.add({ 1.0f, "10.0" });
+
+    lowCutFreqSlider.labels.add({ 0.0f, "20 Hz" });
+    lowCutFreqSlider.labels.add({ 1.0f, "20 kHz" });
+
+    highCutFreqSlider.labels.add({ 0.0f, "20 Hz" });
+    highCutFreqSlider.labels.add({ 1.0f, "20 kHz" });
+
+    lowCutSlopeSlider.labels.add({ 0.0f, "12 db/Oct" });
+    lowCutSlopeSlider.labels.add({ 1.0f, "48 db/Oct" });
+
+    highCutSlopeSlider.labels.add({ 0.0f, "12 db/Oct" });
+    highCutSlopeSlider.labels.add({ 1.0f, "48 db/Oct" });
 
     for (auto* comp : getComps()) {
         addAndMakeVisible(comp);
