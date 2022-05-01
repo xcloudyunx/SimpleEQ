@@ -9,6 +9,12 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+const auto baseColour = juce::Colour(153u, 0u, 0u);
+const auto highlightColour = juce::Colour(255u, 153u, 102u);
+const auto contrastColour = juce::Colour(0u, 153u, 153u);
+const auto triadColourOne = juce::Colour(51u, 153u, 102u);
+const auto triadColourTwo = juce::Colour(0u, 51u, 153u);
+
 void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     int x, int y, int width, int height,
     float sliderPosProportional,
@@ -22,10 +28,10 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
 
     auto enabled = slider.isEnabled();
 
-    g.setColour(enabled ? Colour(97u, 18u, 167u) : Colours::darkgrey);
+    g.setColour(enabled ? baseColour : Colours::darkgrey);
     g.fillEllipse(bounds);
 
-    g.setColour(enabled ? Colour(255u, 154u, 1u) : Colours::grey);
+    g.setColour(enabled ? highlightColour : Colours::grey);
     g.drawEllipse(bounds, 1.0f);
 
     if (auto* rswl = dynamic_cast<RotarySliderWithLabels*>(&slider)) {
@@ -53,9 +59,6 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
 
         r.setSize(strWidth + 4, rswl->getTextHeight() + 2);
         r.setCentre(centre);
-
-        g.setColour(enabled ? Colours::black : Colours::darkgrey);
-        g.fillRect(r);
 
         g.setColour(enabled ? Colours::white : Colours::lightgrey);
         g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1);
@@ -91,13 +94,13 @@ void LookAndFeel::drawToggleButton(juce::Graphics& g,
         powerButton.lineTo(r.getCentre());
 
         PathStrokeType pst(2.0f, PathStrokeType::JointStyle::curved);
-        auto colour = toggleButton.getToggleState() ? Colours::dimgrey : Colour(0u, 172u, 1u);
+        auto colour = toggleButton.getToggleState() ? Colours::dimgrey : contrastColour;
         g.setColour(colour);
         g.strokePath(powerButton, pst);
         g.drawEllipse(r, 2);
     }
     else if (auto* ab = dynamic_cast<AnalyserButton*>(&toggleButton)) {
-        auto colour = toggleButton.getToggleState() ? Colour(0u, 172u, 1u) : Colours::dimgrey;
+        auto colour = toggleButton.getToggleState() ? contrastColour : Colours::dimgrey;
         g.setColour(colour);
 
         auto bounds = toggleButton.getLocalBounds();
@@ -136,7 +139,7 @@ void RotarySliderWithLabels::paint(juce::Graphics& g) {
     auto centre = sliderBounds.toFloat().getCentre();
     auto radius = sliderBounds.getWidth() / 2.0f;
     
-    g.setColour(Colour(0u, 172u, 1u));
+    g.setColour(contrastColour);
     g.setFont(getTextHeight());
 
     auto numChoices = labels.size();
@@ -304,7 +307,7 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
 
     g.drawImage(background, getLocalBounds().toFloat());
 
-    auto responseArea = getRenderArea();
+    auto responseArea = getAnalysisArea();
 
     auto w = responseArea.getWidth();
 
@@ -361,20 +364,20 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
     if (shouldShowFFTAnalysis) {
         auto leftChannelFFTPath = leftPathProducer.getPath();
         leftChannelFFTPath.applyTransform(AffineTransform().translated(responseArea.getX(), responseArea.getY()));
-        g.setColour(Colours::skyblue);
+        g.setColour(triadColourOne);
         g.strokePath(leftChannelFFTPath, PathStrokeType(1.0f));
 
         auto rightChannelFFTPath = rightPathProducer.getPath();
         rightChannelFFTPath.applyTransform(AffineTransform().translated(responseArea.getX(), responseArea.getY()));
-        g.setColour(Colours::lightyellow);
+        g.setColour(triadColourTwo);
         g.strokePath(rightChannelFFTPath, PathStrokeType(1.0f));
     }
 
-    g.setColour(Colours::orange);
+    g.setColour(contrastColour);
     g.drawRoundedRectangle(getRenderArea().toFloat(), 4.0f, 1.0f);
 
     g.setColour(Colours::white);
-    g.strokePath(responseCurve, PathStrokeType(2.0f));
+    g.strokePath(responseCurve, PathStrokeType(1.5f));
 }
 
 void ResponseCurveComponent::resized() {
@@ -413,7 +416,7 @@ void ResponseCurveComponent::resized() {
     Array<float> gainsY;
     for (auto gDb : gains) {
         auto y = jmap(gDb, -24.0f, 24.0f, float(bottom), float(top));
-        g.setColour(gDb == 0.0f ? Colour(0u, 172u, 1u) : Colours::darkgrey);
+        g.setColour(gDb == 0.0f ? baseColour: Colours::darkgrey);
         gainsY.add(y);
         g.drawHorizontalLine(y, left, right);
     }
@@ -460,7 +463,7 @@ void ResponseCurveComponent::resized() {
         r.setCentre(0, y);
         r.setX(getWidth() - textWidth);
 
-        g.setColour(gDb == 0.0f ? Colour(0u, 172u, 1u) : Colours::lightgrey);
+        g.setColour(gDb == 0.0f ? baseColour : Colours::lightgrey);
         g.drawFittedText(str, r, juce::Justification::centred, 1);
 
         str.clear();
@@ -613,7 +616,7 @@ void SimpleEQAudioProcessorEditor::resized()
     auto analyserEnabledArea = bounds.removeFromTop(25);
     analyserEnabledArea.setWidth(100);
     analyserEnabledArea.setX(5);
-    analyserEnabledArea.removeFromTop(2);
+    analyserEnabledArea.removeFromTop(5);
     analyserEnabledButton.setBounds(analyserEnabledArea);
 
     bounds.removeFromTop(5);
