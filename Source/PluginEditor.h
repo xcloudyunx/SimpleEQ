@@ -166,12 +166,16 @@ private:
 };
 
 struct LookAndFeel : juce::LookAndFeel_V4 {
-    void drawRotarySlider(juce::Graphics&,
+    void drawRotarySlider(juce::Graphics& g,
         int x, int y, int width, int height,
         float sliderPosProportional,
         float rotaryStartAngle,
         float rotaryEndAngle,
         juce::Slider&) override;
+    void drawToggleButton(juce::Graphics& g,
+        juce::ToggleButton& toggleButton,
+        bool shouldDrawButtonAsHighlighted,
+        bool shouldDrawButtonAsDown) override;
 };
 
 struct RotarySliderWithLabels : juce::Slider {
@@ -298,6 +302,8 @@ private:
 
     using ButtonAttachment = APVTS::ButtonAttachment;
     ButtonAttachment lowCutBypassButtonAttachment, peakBypassButtonAttachment, highCutBypassButtonAttachment, analyserEnabledButtonAttachment;
+
+    LookAndFeel lnf;
 
     std::vector<juce::Component*> getComps();
 
