@@ -99,13 +99,14 @@ void RotarySliderWithLabels::paint(juce::Graphics& g) {
 
         auto ang = jmap(pos, 0.0f, 1.0f, startAng, endAng);
 
-        auto c = centre.getPointOnCircumference(radius + getTextHeight() / 2.0f + 1, ang);
+        
+
+        auto c = centre.getPointOnCircumference(radius + 1.5f * getTextHeight(), ang);
 
         Rectangle<float> r;
         auto str = labels[i].label;
         r.setSize(g.getCurrentFont().getStringWidth(str), getTextHeight());
         r.setCentre(c);
-        r.setY(r.getY() + getTextHeight());
         
         g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
     }
@@ -300,11 +301,11 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
     highCutFreqSlider.labels.add({ 0.0f, "20 Hz" });
     highCutFreqSlider.labels.add({ 1.0f, "20 kHz" });
 
-    lowCutSlopeSlider.labels.add({ 0.0f, "12 db/Oct" });
-    lowCutSlopeSlider.labels.add({ 1.0f, "48 db/Oct" });
+    lowCutSlopeSlider.labels.add({ 0.0f, "12" });
+    lowCutSlopeSlider.labels.add({ 1.0f, "48" });
 
-    highCutSlopeSlider.labels.add({ 0.0f, "12 db/Oct" });
-    highCutSlopeSlider.labels.add({ 1.0f, "48 db/Oct" });
+    highCutSlopeSlider.labels.add({ 0.0f, "12" });
+    highCutSlopeSlider.labels.add({ 1.0f, "48" });
 
     for (auto* comp : getComps()) {
         addAndMakeVisible(comp);
