@@ -39,7 +39,7 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
 
         p.addRoundedRectangle(r, 2.0f);
 
-        //jassert(rtoaryStartAngle < rotaryEndAngle);
+        jassert(rotaryStartAngle < rotaryEndAngle);
 
         auto sliderAngRad = jmap(sliderPosProportional, 0.0f, 1.0f, rotaryStartAngle, rotaryEndAngle);
         p.applyTransform(AffineTransform().rotated(sliderAngRad, centre.getX(), centre.getY()));
@@ -71,10 +71,10 @@ void RotarySliderWithLabels::paint(juce::Graphics& g) {
 
     auto sliderBounds = getSliderBounds();
 
-    g.setColour(Colours::red);
+    /*g.setColour(Colours::red);
     g.drawRect(getLocalBounds());
     g.setColour(Colours::yellow);
-    g.drawRect(sliderBounds);
+    g.drawRect(sliderBounds);*/
 
     getLookAndFeel().drawRotarySlider(g,
         sliderBounds.getX(),
@@ -102,7 +102,30 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderBounds() const {
 }
 
 juce::String RotarySliderWithLabels::getDisplayString() const {
-    return juce::String(getValue());
+    if (auto * choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param)) {
+        return choiceParam->getCurrentChoiceName();
+    }
+    juce::String str;
+    bool addK = false;
+
+    if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param)) {
+        float val = getValue();
+        if (val >= 1000.0f) {
+            val /= 1000.0f;
+            addK = true;
+        }
+        str = juce::String(val, (addK ? 2 : 0));
+    }
+    else {
+        jassertfalse;
+    }
+
+    if (suffix.isNotEmpty()) {
+        str << " ";
+        if (addK) str << "k";
+        str << suffix;
+    }
+    return str;
 }
 
 //==============================================================================
